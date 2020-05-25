@@ -9,7 +9,7 @@ clc
 
 % create figure
 screen_size = get(0,'ScreenSize');                  % get screen size
-figure_size = [650 650];                            % figure-size
+figure_size = [1000 1000];                            % figure-size
 limit_left = screen_size(3)/2-figure_size(1)/2;     % figure centered horizontally
 limit_down = screen_size(4)/2-figure_size(2)/2;     % figure centered vertically
 
@@ -33,9 +33,9 @@ else
         'CloseRequestFcn',@(s,e)PacmanCloseFcn);
 end
 
-gameData = load('gameData.mat');
+gameData = load('CargoXXL.mat');
 
-gameBoardSize = [31 34];
+gameBoardSize = [61 67];
 gameBoard = zeros(gameBoardSize(1),gameBoardSize(2));
 
 myAxes1Pac = axes('Units','normalized','Position',[0.1 0.1 0.8 0.8],...                                            
@@ -45,10 +45,10 @@ axis(myAxes1Pac,'off','equal')
 
 buttonDownFlag = 0;
 
-gridXY = zeros(30*33,2);
+gridXY = zeros(60*66,2);
 tt = 1;
-for hh = 1:30
-    for ff = 1:33
+for hh = 1:60
+    for ff = 1:66
         gridXY(tt,:) = [hh ff];
         tt = tt+1;
     end
@@ -56,8 +56,8 @@ end
 plot(myAxes1Pac,gridXY(:,1),gridXY(:,2),'r.','ButtonDownFcn',@(s,e)ButtonDownFun,'MarkerSize',5); % grid plot
 
 tt = 1;
-for hh = 2:29
-    for ff = 2:32
+for hh = 2:59
+    for ff = 2:65
         coins.data(tt,:) = [hh ff];
         tt = tt+1;
     end
@@ -489,9 +489,9 @@ makeMaze(gameBoard)
         
         pacmanWallsTest = [pacmanWalls [12:19 ones(1,5)*19 19:-1:12 ones(1,5)*12; ones(1,8)*16 16:20 ones(1,8)*20 20:-1:16]]-1;
         
-        allDirections = cell(33,33);
-        for ii = 1:33
-            for jj = 1:33
+        allDirections = cell(67,67);
+        for ii = 1:67
+            for jj = 1:67
                 curDirections = 1:4;
                 if any(ismember(pacmanWallsTest',[ii+1,jj],'rows'))
                     curDirections(curDirections==1) = [];

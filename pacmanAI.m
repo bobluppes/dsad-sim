@@ -32,7 +32,7 @@ function targetSquare = pacmanAI(pacman,enemies,allDirections,coins,pills)
 %% AI
 % This part can be changed completely
     allDist = 100*ones(4,2);
-    for nn = 1:4 
+    for nn = 1:1 
         if enemies(nn).status == 1
             allDist(nn,1) = norm(pacman.pos-enemies(nn).pos);
         elseif enemies(nn).status == 2
