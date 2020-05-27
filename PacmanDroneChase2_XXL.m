@@ -44,7 +44,7 @@ clc
 
 %% General configurations
 % load standard game data
-gameData = load('CargoXXL.mat');
+gameData = load('CargoXXLnormMOD.mat');
 
 % change the game configurations to suit yourself
 overallEnemySpeed = 1/2;    % standard ghost speed, (default: 1/8, maximum possible: 1/2);
@@ -52,17 +52,19 @@ grumpyTime = 700;           % time-increments that ghosts stay grumpy for (defau
 grumpyTimeSwitch = 200;     % time-increments that grumpy ghosts show that they are going to turn normal again (default: 200)
 newEnemyTime = 500;         % time-increments that pass before the next ghost is let out of his cage (default: 500)
 fruitAppear = [300,1500];   % time frame in whih fruits are to appear in the game (default: between 300 and 1500 time-increments after level start)
-game.speed = 0.015;         % game speed (time-increment between two frames) maximum possible without lag on my machine: 0.008
+game.speed = 0.01;         % game speed (time-increment between two frames) maximum possible without lag on my machine: 0.008
 game.faster = 0.000;       % make game faster every level by this amount (default: -0.001)
-game.maxSpeed = 0.015;      % maximimum game speed (default: 0.01)
-AI.init = 0.5;              % initial AI-> 0: (almost) no randomness, 1: full randomness
+game.maxSpeed = 0.01;      % maximimum game speed (default: 0.01)
+AI.init = 0.3;              % initial AI-> 0: (almost) no randomness, 1: full randomness
 AI.improve = 0.0;          % AI-improvement per level (default: -0.1)
-pacman.speed = 1/6;         % pacman speed (default: 1/6 => pacman eats exactly two coins with every mouth open/close cycle, maximum possible: 1/2)
+pacman.speed = 1/5;         % pacman speed (default: 1/6 => pacman eats exactly two coins with every mouth open/close cycle, maximum possible: 1/2)
 enemyPersonalities = 0;     % flag whether to use individual personalities for every ghost or not
 showGhostTarget = 0;        % flag whether to show where each ghost is heading towards or not
 autoPlay = 1;               % flag whether auto play is on or not
 invincible = 0;             % make pacman invincible
 soundsFlag = 0;             % flag whether sounds are on or off
+
+lives.orig = 3;             % lives of pacman
 
 % Use "Courier New" Font if available. But "Arial" is also ok.
 if any(strcmp(listfonts,'Courier New'))
@@ -83,7 +85,7 @@ pacman_Fig = figure('units','pixels','Position',[limit_left limit_down figure_si
     'WindowKeyPressFcn',@KeyAction,...              % Keyboard-Callback
     'CloseRequestFcn',@(s,e)PacmanCloseFcn);        % when figure is closed
 myAxes1 = axes('Units','normalized','Position',[0 0.04 1 0.90],...                                            
-    'XLim',[-3.11 66.01],'YLim',[-3.11 66.01]); 
+    'XLim',[-3.11 76.01],'YLim',[-3.11 76.01]); 
 hold(myAxes1,'on')
 axis(myAxes1,'off','equal')
 
@@ -96,7 +98,7 @@ grumpySprites = allSprites.grumpy;                  % all grumpy-Sprites
 fruits.data = allSprites.fruits;                    % all fruits-Sprites
 
 allWallsPlot = plot(myAxes1,allWalls.pacmanWalls(1,:),allWalls.pacmanWalls(2,:),'b-','LineWidth',2);    % plot all walls
-plot(myAxes1,[13.1 15.9],[18.75 18.75],'w-','LineWidth',3)                              % plot gate of ghost cage
+%plot(myAxes1,[13.1 15.9],[18.75 18.75],'w-','LineWidth',3)                              % plot gate of ghost cage
 
 %% Coins and pills
 coins = gameData.gameData.coins;    % all coins-data
@@ -123,7 +125,7 @@ imagesc(myAxes1,'XData',[0 0.001],'YData',[0.001 0],'CData',repmat(1:length(allS
 colormap(allSprites.colormap)   % change colormap
 
 %% Initialize Ghosts
-enemies(1).pos = [12.5, 20];            % ghost position
+enemies(1).pos = [31, 36];            % ghost position
 enemies(1).dir = 0;                     % current ghost direction (right-1, down-2, left-3, up-4)
 enemies(1).oldDir = 1;                  % last ghost direction
 enemies(1).speed = overallEnemySpeed;   % ghost speed
@@ -134,7 +136,7 @@ enemies(1).textTimer = 0;               % remembers when enemy was eaten
 enemies(1).plot = imagesc(myAxes1,'XData',[enemies(1).pos(1)-0.6 enemies(1).pos(1)+0.6],'YData',[enemies(1).pos(2)+0.6 enemies(1).pos(2)-0.6],'CData',ghostSprites{1,2,1});
 enemies(1).text = text(enemies(1).pos(1),enemies(1).pos(2),'100','Color','w','FontSize',10,'Visible','off','Parent',myAxes1,'FontName',pacFont,'FontUnits','normalized','FontWeight','bold');
 
-enemies(2).pos = [11.5, 14];
+enemies(2).pos = [31, 36];
 enemies(2).dir = 0;
 enemies(2).oldDir = 1;
 enemies(2).speed = overallEnemySpeed;
@@ -170,9 +172,10 @@ enemies(2).text = text(enemies(2).pos(1),enemies(2).pos(2),'100','Color','w','Fo
 %% Scatter or Chase modes (0: chase mode, 1: scatter mode)
 ghostMode.timer = 0;
 ghostMode.timerValues = [250 1000; 1500 2000; 2650 3650; 3800 -1]; % switch to and fro from chase to scatter mode after some time. In the end only chase
-ghostMode.timerStatus = 1; % in which interval of "ghostMode.timerValues" we are right now
+ghostMode.timerStatus = 4; % in which interval of "ghostMode.timerValues" we are right now
 ghostMode.status = 1; % 0: chase, 1: scatter
-ghostMode.tiles = [1 -10; 28 -10; 28 33; 1 33]; % corner tiles for scatter mode. are slightly above and beneath the actual corners so host don't get trapped 
+%ghostMode.tiles = [1 -10; 28 -10; 28 33; 1 33]; % corner tiles for scatter mode. are slightly above and beneath the actual corners so host don't get trapped 
+ghostMode.tiles = [70 80; 70 80; 70 80; 70 80]; % corner tiles for scatter mode. are slightly above and beneath the actual corners so host don't get trapped 
 ghostMode.targetPlot = gobjects(1,4); % plot objects for target visualization
 ghostMode.form = [0.5 0.5 -0.5 -0.5; 0.5 -0.5 -0.5 0.5]; % target form (square)
 for ii = 1:2
@@ -222,7 +225,7 @@ pacman.targetPlot = patch('XData',ghostMode.form(1,:),'YData',ghostMode.form(2,:
 pacman.curAutoDir = [1 0];
 
 %% lives, score, level, info, animations...
-lives.orig = 3;             % lives of pacman
+
 lives.data = lives.orig;    % remember default lives of pacman         
 lives.plot = gobjects(1,lives.data);
 timetable = zeros(1, lives.orig);
@@ -231,16 +234,16 @@ tasktable = zeros(1, lives.orig);
 for ii = 1:lives.data
     lives.plot(ii) = fill(pacman.frames{3,5}(1,:)+1+3*(ii-1),pacman.frames{3,5}(2,:)-2,'y','Parent',myAxes1);
 end
-
+set(lives.plot(:),'Visible','off')
 score.data = 0;             % score
-score.plot = text(29,33.1,['Score: ' num2str(score.data)],'Color','w','FontSize',12,'HorizontalAlign','Right','FontName',pacFont,'FontUnits','normalized','FontWeight','bold','Parent',myAxes1);
+score.plot = text(39,73.1,['Score: ' num2str(score.data)],'Color','w','FontSize',12,'HorizontalAlign','Right','FontName',pacFont,'FontUnits','normalized','FontWeight','bold','Parent',myAxes1);
 
 level.data = 1;          	% level
-level.plot = text(0,33.1,['Level: ' num2str(level.data)],'Color','w','FontSize',12,'HorizontalAlign','Left','FontName',pacFont,'FontUnits','normalized','FontWeight','bold','Parent',myAxes1);
+level.plot = text(0,73.1,['Level: ' num2str(level.data)],'Color','w','FontSize',12,'HorizontalAlign','Left','FontName',pacFont,'FontUnits','normalized','FontWeight','bold','Parent',myAxes1);
 
-info.text = text(14.65,13.9,'READY!','Color','g','FontSize',20,'FontWeight','bold','horizontalAlignment','center','FontName',pacFont,'FontUnits','normalized','FontWeight','bold','Parent',myAxes1);
+info.text = text(31.5,32,'READY!','Color','g','FontSize',20,'FontWeight','bold','horizontalAlignment','center','FontName',pacFont,'FontUnits','normalized','FontWeight','bold','Parent',myAxes1);
 
-rays.num = 50;              % bursting rays when pacman is hit by ghost
+rays.num = 10;              % bursting rays when pacman is hit by ghost
 rays.numFrames = 25;
 rays.t = linspace(0,2*pi*(1-1/rays.num),rays.num);
 rays.rad1 = linspace(0,1,rays.numFrames);
@@ -279,7 +282,7 @@ for ii = 1:10
     highScore.texts(ii).Enable = 'off';
     highScore.values(ii)= createUIcontrol('text',[0.7 0.9-ii/11.5 0.3 0.07],num2str(highScore.data{ii,2}),16,pacFont,'k','w',highScore.fig,'on','');
 end
-info.highScoreText = text(14.5,33.1,['High Score: ' num2str(highScore.data{1,2})],'Color','w','FontSize',12,'HorizontalAlign','Center','FontName',pacFont,'FontUnits','normalized','FontWeight','bold','Parent',myAxes1);
+info.highScoreText = text(14.5,73.1,['High Score: ' num2str(highScore.data{1,2})],'Color','w','FontSize',12,'HorizontalAlign','Center','FontName',pacFont,'FontUnits','normalized','FontWeight','bold','Parent',myAxes1);
 
 %% Sounds
 % special thanks to: http://www.classicgaming.cc/classics/pac-man/sounds
@@ -327,7 +330,7 @@ pacmanLabyCreator_Fig = figure('Visible','off');
         set(score.plot,'String',['Score: ' num2str(score.data)])
         lives.data = lives.orig;
     
-        set(lives.plot(:),'Visible','on')
+        set(lives.plot(:),'Visible','off')
         set(fruits.bottomPlot(:),'Visible','off')
         set(fruits.bottomText(:),'Visible','off')
         set(newGameButton,'Visible','off')
@@ -431,14 +434,16 @@ pacmanLabyCreator_Fig = figure('Visible','off');
     function newGame
        
         stop(myTimer)
+        delete(myTimer)
+        myTimer = timer('TimerFcn',@(s,e)GameLoop,'Period',game.speed,'ExecutionMode','fixedRate');
         tic
-        enemies(1).pos = [14.5, 20];
-        enemies(2).pos = [11.5, 20];
+        enemies(1).pos = [1, 1];
+        enemies(2).pos = [1, 1];
         %enemies(3).pos = [17.5, 14];
         %enemies(4).pos = [17.5, 14];
         for nn = 1:2
             enemies(nn).status = 1;
-            enemies(nn).dir = 0;
+            enemies(nn).dir = 3;
             enemies(nn).oldDir = 2;
             enemies(nn).speed = overallEnemySpeed;
             enemies(nn).statusTimer = 1;
@@ -451,7 +456,7 @@ pacmanLabyCreator_Fig = figure('Visible','off');
         ghostMode.timerStatus = 1; 
         ghostMode.status = 1; 
         
-        pacman.pos = [1 1];
+        pacman.pos = [61 71];
         pacman.dir = 0;
         pacman.oldDir = 1;
         pacman.status = -2;
@@ -490,10 +495,10 @@ pacmanLabyCreator_Fig = figure('Visible','off');
         if isempty(coins.data) % next Level
             level.data = level.data+1;
             set(level.plot,'String',['Level: ' num2str(level.data)]);
-            game.speed = game.speed;
-            if game.speed < game.maxSpeed   
-                game.speed = game.speed; % limit game speed, so screen has time to update itself
-            end
+%            game.speed = game.speed;
+%             if game.speed < game.maxSpeed   
+%                 game.speed = game.speed; % limit game speed, so screen has time to update itself
+%             end
             stop(myTimer)
             set(myTimer,'Period',game.speed)
             coins.data = coins.originalData;
@@ -561,8 +566,8 @@ pacmanLabyCreator_Fig = figure('Visible','off');
             if soundsFlag
                 play(sounds.eatfruit)
             end
-            for mm = 0:30
-                set(fruits.scoreText,'String',num2str(fruits.score(fruits.item)),'Position',[fruits.pos(1)-0.6,fruits.pos(2)+(mm)/30+0.6,0],'Visible','on')
+            for mm = 0:63
+                set(fruits.scoreText,'String',num2str(fruits.score(fruits.item)),'Position',[fruits.pos(1)-0.6,fruits.pos(2)+(mm)/63+0.6,0],'Visible','on')
                 pause(0.02)
             end
             fruits.pos = [0,0];
@@ -580,20 +585,20 @@ pacmanLabyCreator_Fig = figure('Visible','off');
 
     function pacmanMoveFun
         % Tunnel logic
-        if pacman.pos(1) > 58
+        if pacman.pos(1) > 61
             pacman.pos(1) = 1;
         elseif pacman.pos(1) < 1
-            pacman.pos(1) = 58;
-        elseif pacman.pos(2) > 64
+            pacman.pos(1) = 61;
+        elseif pacman.pos(2) > 71
             pacman.pos(2) = 1;
         elseif pacman.pos(2) < 1
-            pacman.pos(2) = 64;
+            pacman.pos(2) = 71;
         end
         
         % Pacman AI
         if autoPlay
             curSquare1 = findSquare(pacman,pacman.dir);
-            curSquare2 = pacmanAI(pacman,enemies,allDirections,coins,pills);
+            curSquare2 = pacmanAI2(pacman,enemies,allDirections,coins,pills);
             pacman.dir = shortestPath(curSquare1,curSquare2,pacman);
             if showGhostTarget
                 set(pacman.targetPlot,'XData',curSquare2(1)+ghostMode.form(1,:),'YData',curSquare2(2)+ghostMode.form(2,:),'Visible','on')
@@ -665,28 +670,38 @@ pacmanLabyCreator_Fig = figure('Visible','off');
             set(rays.plot,'Visible','off')
             
             if lives.data > 0 % start anew
-                set(lives.plot(lives.data+1),'Visible','off')
+                set(lives.plot(lives.data),'Visible','off')
                 tasktable(lives.data+1)= get(myTimer,'TasksExecuted')
                 timetable(lives.data+1)= toc
                 newGame
             else % Game Over
                 set(info.text,'Visible','on','String','Game Over', 'Color','r')              
                 stop(myTimer)
+% Save steps / time                
                 tasktable(lives.data+1)= get(myTimer,'TasksExecuted')
                 timetable(lives.data+1)= toc
-                %setHighscore
+                save('tasktable2.mat', 'tasktable');
+% Plot polar scatter
+                figure('Name','Scatter plot for PacMan distance');
+                sx = 1:lives.orig;
+                %th = 0:2*pi/lives.org:2*pi;
+                sy = tasktable;
+                scatter(sx,sy, 'filled')
+                
+                setHighscore
                 set(newGameButton,'Visible','on')
                 set(createGhostsButton,'Visible','on')
                 set(loadGhostsButton,'Visible','on')
                 set(createLabyButton,'Visible','on')
                 set(showHighScoresButton,'Visible','on')
-%                 pd = fitdist(tasktable, 'Normal')
-%                 
-%                
-%                 figure('Name','Histogram');
-%                 histogram(timetable)
-%                 
-%                 
+% Calc Rayleigh                
+                pd = fitdist(tasktable', 'Rayleigh')
+                xaxis = 0:max(tasktable);
+% Plot Rayleigh fit
+                figure('Name','Rayleigh fit on PacMan distance');
+                y = pdf(pd, xaxis);
+                plot(xaxis,y,'LineWidth',2)
+  
             end
         end
     end
@@ -711,8 +726,8 @@ pacmanLabyCreator_Fig = figure('Visible','off');
                 if soundsFlag
                     play(sounds.eatghost)
                 end
-                for mm = 0:30
-                    set(enemies(nn).text,'String',num2str(ghostPoints),'Position',[enemies(nn).pos(1)-0.6,enemies(nn).pos(2)+mm/30,0],'Visible','on')
+                for mm = 0:63
+                    set(enemies(nn).text,'String',num2str(ghostPoints),'Position',[enemies(nn).pos(1)-0.6,enemies(nn).pos(2)+mm/63,0],'Visible','on')
                     pause(0.02)
                 end
                 
@@ -810,13 +825,13 @@ pacmanLabyCreator_Fig = figure('Visible','off');
                         
                         if curSquare2(1) < 1 
                             curSquare2(1) = 1;
-                        elseif curSquare2(1) > 58 
-                            curSquare2(1) = 58;
+                        elseif curSquare2(1) > 61 
+                            curSquare2(1) = 61;
                         end
                         if curSquare2(2) < 1 
                             curSquare2(2) = 1;
-                        elseif curSquare2(2) > 64 
-                            curSquare2(2) = 64;
+                        elseif curSquare2(2) > 71 
+                            curSquare2(2) = 71;
                         end
                         
                         if showGhostTarget
@@ -921,14 +936,14 @@ pacmanLabyCreator_Fig = figure('Visible','off');
                 enemies(nn).status = 1;
             end
             % Tunnel logic
-            if enemies(nn).pos(1) > 58
+            if enemies(nn).pos(1) > 61
                 enemies(nn).pos(1) = 1;
             elseif enemies(nn).pos(1) < 1
-                enemies(nn).pos(1) = 58;
-            elseif enemies(nn).pos(2) > 64
+                enemies(nn).pos(1) = 61;
+            elseif enemies(nn).pos(2) > 71
                 enemies(nn).pos(2) = 1;
             elseif enemies(nn).pos(2) < 1
-                enemies(nn).pos(2) = 64;
+                enemies(nn).pos(2) = 71;
             end
             % remember ghost movement possiblities, proportional to enemy
             % speed, so that he remebers only the last squares's
@@ -1050,7 +1065,7 @@ pacmanLabyCreator_Fig = figure('Visible','off');
         if ~ghostMode.status && myTimer.TasksExecuted > ghostMode.timerValues(ghostMode.timerStatus,1) && myTimer.TasksExecuted < ghostMode.timerValues(ghostMode.timerStatus,2) 
             ghostMode.status = 1;
         elseif ghostMode.status && myTimer.TasksExecuted > ghostMode.timerValues(ghostMode.timerStatus,2)
-            ghostMode.timerStatus = ghostMode.timerStatus+1;
+            ghostMode.timerStatus = ghostMode.timerStatus;
             ghostMode.status = 1;
         end
     end

@@ -35,7 +35,7 @@ end
 
 gameData = load('CargoXXL.mat');
 
-gameBoardSize = [61 67];
+gameBoardSize = [64 74];
 gameBoard = zeros(gameBoardSize(1),gameBoardSize(2));
 
 myAxes1Pac = axes('Units','normalized','Position',[0.1 0.1 0.8 0.8],...                                            
@@ -45,10 +45,10 @@ axis(myAxes1Pac,'off','equal')
 
 buttonDownFlag = 0;
 
-gridXY = zeros(60*66,2);
+gridXY = zeros(63*73,2);
 tt = 1;
-for hh = 1:60
-    for ff = 1:66
+for hh = 1:63
+    for ff = 1:73
         gridXY(tt,:) = [hh ff];
         tt = tt+1;
     end
@@ -56,21 +56,22 @@ end
 plot(myAxes1Pac,gridXY(:,1),gridXY(:,2),'r.','ButtonDownFcn',@(s,e)ButtonDownFun,'MarkerSize',5); % grid plot
 
 tt = 1;
-for hh = 2:59
-    for ff = 2:65
+for hh = 2:62
+    for ff = 2:72
         coins.data(tt,:) = [hh ff];
         tt = tt+1;
     end
 end
-current_wall = [12 19 19 12 12; 16 16 20 20 16]';
+%current_wall = [12 19 19 12 12; 16 16 20 20 16]';
+current_wall = [9 10 10 9 9; 17 17 22 22 17]';
 coins.data(inpolygon(coins.data(:,1),coins.data(:,2),current_wall(:,1),current_wall(:,2)),:) = [];
 coins.plot = plot(myAxes1Pac,coins.data(:,1),coins.data(:,2),'wo','LineWidth',1,'MarkerSize',1.5,'MarkerFaceColor','w','ButtonDownFcn',@(s,e)ButtonDownFun);
 
 test1WallsPlot = plot(myAxes1Pac,0,0,'b-','LineWidth',2,'ButtonDownFcn',@(s,e)ButtonDownFun);    % plot all walls
 % cage plot
-plot(myAxes1Pac,[12 19 19 17 17 18.5 18.5 12.5 12.5 14 14 12 12],[16 16 20 20 19.5 19.5 16.5 16.5 19.5 19.5 20 20 16],'b-','LineWidth',2,'ButtonDownFcn',@(s,e)ButtonDownFun);    % plot cage
+%plot(myAxes1Pac,[12 19 19 17 17 18.5 18.5 12.5 12.5 14 14 12 12],[16 16 20 20 19.5 19.5 16.5 16.5 19.5 19.5 20 20 16],'b-','LineWidth',2,'ButtonDownFcn',@(s,e)ButtonDownFun);    % plot cage
 % door plot
-plot(myAxes1Pac,[14 17],[19.75 19.75],'w-','LineWidth',3);
+%plot(myAxes1Pac,[14 17],[19.75 19.75],'w-','LineWidth',3);
 
 lastEntry = [-1 -1];
 wallsMat = [];
@@ -143,9 +144,9 @@ pills.flag = 0;
 pacmanWalls = [];
 pacmanCoins = [];
 
-% gameBoard = zeros(gameBoardSize(1),gameBoardSize(2));
-% gameBoard(2:end-1,2:end-1) = rand(gameBoardSize(1)-2,gameBoardSize(2)-2)>0.5;
-gameBoard = pacBoard;
+gameBoard = zeros(gameBoardSize(1),gameBoardSize(2));
+%gameBoard(2:end-1,2:end-1) = rand(gameBoardSize(1)-2,gameBoardSize(2)-2)>0.5;
+%gameBoard = pacBoard;
 makeMaze(gameBoard)
 
     function PacmanCloseFcn1
@@ -171,9 +172,11 @@ makeMaze(gameBoard)
 
         buttonDownFlag = 0;
         lastEntry = [-1 -1];
-        gameBoard(11:21,15:22) = 0;
-        gameBoard(15:17,9:10) = 0;
-
+        %gameBoard(11:21,15:22) = 0;
+        %gameBoard(8:11,16:23) = 0;
+        %gameBoard(15:17,9:10) = 0;
+        %gameBoard(11:21,15:22) = 0;
+        
         if ~currentWallType 
             pseudoWall2 = round(myAxes1Pac.CurrentPoint(1,1:2));
             pseudoWallCell{end+1} = [pseudoWall1(1) pseudoWall1(1) pseudoWall2(1) pseudoWall2(1) pseudoWall1(1);...
@@ -195,7 +198,7 @@ makeMaze(gameBoard)
         currentPoint = ceil(myAxes1Pac.CurrentPoint(1,1:2));
         
         if currentWallType == 2
-            if  pills.flag > 0 && currentPoint(1) > 1 && currentPoint(1) < 30 && currentPoint(2) > 1 && currentPoint(2) < 33
+            if  pills.flag > 0 && currentPoint(1) > 1 && currentPoint(1) < 63 && currentPoint(2) > 1 && currentPoint(2) < 73
                 pills.data(pills.flag,:) = currentPoint;
                 set(pills.plot(pills.flag),'XData',currentPoint(1)+pills.form(1,:),'YData',currentPoint(2)++pills.form(2,:))
             end
@@ -487,11 +490,12 @@ makeMaze(gameBoard)
         
         gameData.gameData.coins.data = pacmanCoins-1;
         
-        pacmanWallsTest = [pacmanWalls [12:19 ones(1,5)*19 19:-1:12 ones(1,5)*12; ones(1,8)*16 16:20 ones(1,8)*20 20:-1:16]]-1;
+        %pacmanWallsTest = [pacmanWalls [12:19 ones(1,5)*19 19:-1:12 ones(1,5)*12; ones(1,8)*16 16:20 ones(1,8)*20 20:-1:16]]-1;
+        pacmanWallsTest = [pacmanWalls [9:10 ones(1,6)*10 10:-1:9 ones(1,6)*9; ones(1,2)*17 17:22 ones(1,2)*20 22:-1:17]]-1;
         
-        allDirections = cell(67,67);
-        for ii = 1:67
-            for jj = 1:67
+        allDirections = cell(73,73);
+        for ii = 1:73
+            for jj = 1:73
                 curDirections = 1:4;
                 if any(ismember(pacmanWallsTest',[ii+1,jj],'rows'))
                     curDirections(curDirections==1) = [];
@@ -510,6 +514,7 @@ makeMaze(gameBoard)
         end
         
         gameData.gameData.allWalls.pacmanWalls = [pacmanWalls [12 19 19 17 17 18.5 18.5 12.5 12.5 14 14 12 12;16 16 20 20 19.5 19.5 16.5 16.5 19.5 19.5 20 20 16]]-1;
+
         
         gameData.gameData.allDirections = allDirections;
         
